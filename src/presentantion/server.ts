@@ -16,6 +16,11 @@ export class Server {
     this.routes=routes
   }
   async start() {
+    //Middlewares
+    //* Para aceptar los datos enviados como JSON
+    this.app.use(express.json())
+    //* Para aceptar la data en x-www-form-encoded
+    //this.app.use(express.urlencoded({extended:true}))
     //Usar las rutas definidas
     this.app.use(this.routes)
     this.app.listen(this.port, () => {
