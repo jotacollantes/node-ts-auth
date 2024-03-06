@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AuthRepository, CustomError, RegisterUserDto } from "../../domain";
+import { AuthRepository, CustomError, LoginUser, LoginUserDto, RegisterUser, RegisterUserDto } from "../../domain";
 import { JwtAdapter } from "../../config";
 import { UserModel } from "../../data/mongodb";
 export class AuthController {
@@ -30,24 +30,32 @@ export class AuthController {
     // en este punto todos los datos fueron verificados.
     //res.json(registerUserDto)
 
-    //* con callbacks()
-    //this.authRepository.register(registerUserDto!).then((user)=>res.json(user)).catch((error)=>res.status(500).json(error))
-    //* Con async/await
-    try {
-      const user = await this.authRepository.register(registerUserDto!);
-      res.json({
-        user,
-        //Generamos el JWT
-        //token: await JwtAdapter.generateToken({ email: user.email }),
-        token: await JwtAdapter.generateToken({ id: user.id }),
-      });
-    } catch (error) {
-      //res.status(500).json(error);
-      this.handlerError(error, res);
-    }
+    // //* con callbacks()
+    // //this.authRepository.register(registerUserDto!).then((user)=>res.json(user)).catch((error)=>res.status(500).json(error))
+    // //* Con async/await
+    // try {
+    //   const user = await this.authRepository.register(registerUserDto!);
+    //   res.json({
+    //     user,
+    //     //Generamos el JWT
+    //     //token: await JwtAdapter.generateToken({ email: user.email }),
+    //     token: await JwtAdapter.generateToken({ id: user.id }),
+    //   });
+    // } catch (error) {
+    //   //res.status(500).json(error);
+    //   this.handlerError(error, res);
+    // }
+   //! Con casos de usos
+     //no se especifica el 2do argumento que es el jwtadapter ya que tomara el valor por defecto
+     new RegisterUser(this.authRepository).execute(registerUserDto!).then((user)=>res.json(user)).catch((error)=>this.handlerError(error, res))
   };
+
   loginUser = (req: Request, res: Response) => {
-    res.json("Login user controller");
+    //res.json("Login user controller");
+    const [error, loginUserDto] = LoginUserDto.create(req.body);
+    if (error) return res.status(400).json({ error });
+    //Mandamos la instancia del repositorio al caso de uso
+    new LoginUser(this.authRepository).execute(loginUserDto!).then((user)=>res.json(user)).catch((error)=>this.handlerError(error, res))
   };
 
   getUsers=(req:Request,res:Response)=>{
